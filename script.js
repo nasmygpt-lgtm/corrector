@@ -8,10 +8,136 @@ const changesList = document.getElementById("changesList");
 const status = document.getElementById("status");
 const rajEmail = document.getElementById("rajEmail");
 
-document.getElementById("correctBtn").addEventListener("click", correctText);
+const apiKeyInput = document.getElementById("apiKey");
+const correctBtn = document.getElementById("correctBtn");
+
+document.getElementById("correctBtn").addEventListener("click", handleCorrect);
 document.getElementById("clearBtn").addEventListener("click", clearAll);
 document.getElementById("copyBtn").addEventListener("click", copyOutput);
 document.getElementById("emailBtn").addEventListener("click", sendToRaj);
+
+// ---- API key: load from browser storage, save on change ----
+const KEY_STORAGE = "geminiApiKey";
+apiKeyInput.value = localStorage.getItem(KEY_STORAGE) || "";
+apiKeyInput.addEventListener("input", () => {
+  localStorage.setItem(KEY_STORAGE, apiKeyInput.value.trim());
+});
+
+// Show/hide the key
+document.getElementById("toggleKey").addEventListener("click", (e) => {
+  if (apiKeyInput.type === "password") {
+    apiKeyInput.type = "text";
+    e.target.textContent = "Hide";
+  } else {
+    apiKeyInput.type = "password";
+    e.target.textContent = "Show";
+  }
+});
+
+function getMode() {
+  const checked = document.querySelector('input[name="mode"]:checked');
+  return checked ? checked.value : "ai";
+}
+
+// Decide which correction method to use
+function handleCorrect() {
+  if (getMode() === "ai") {
+    correctWithAI();
+  } else {
+    correctText();
+  }
+}
+
+// Gemini models to try, in order (falls back if one is unavailable)
+const GEMINI_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+];
+
+async function correctWithAI() {
+  const raw = inputText.value.trim();
+  if (!raw) {
+    showStatus("Please paste some text first.", true);
+    return;
+  }
+  const key = apiKeyInput.value.trim();
+  if (!key) {
+    showStatus("Please paste your Gemini API key in the settings below.", true);
+    return;
+  }
+
+  setBusy(true);
+  showStatus("Correcting with AI, please wait...", false);
+  changesList.innerHTML = "";
+
+  const prompt =
+    "You are an English correction assistant. Rewrite the following text in clear, " +
+    "correct, well-formatted English. Fix all grammar, spelling, punctuation, dates, " +
+    "and awkward phrasing. If it reads like an email, format it neatly with a greeting " +
+    "and sign-off placeholder. Keep the meaning the same. Return ONLY the corrected text, " +
+    "with no explanations or extra comments.\n\nText:\n" +
+    raw;
+
+  let lastError = "";
+  for (const model of GEMINI_MODELS) {
+    try {
+      const url =
+        "https://generativelanguage.googleapis.com/v1beta/models/" +
+        model +
+        ":generateContent?key=" +
+        encodeURIComponent(key);
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        lastError =
+          (errBody.error && errBody.error.message) ||
+          "HTTP " + res.status;
+        // 404 = model not available for this key, try next model
+        if (res.status === 404) continue;
+        // 400/403 = key problem, stop trying
+        break;
+      }
+
+      const data = await res.json();
+      const text =
+        data &&
+        data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts[0] &&
+        data.candidates[0].content.parts[0].text;
+
+      if (text) {
+        outputText.value = text.trim();
+        renderChanges(["Corrected using AI (" + model + ")."]);
+        showStatus("Done! Review the corrected text below.", false);
+        setBusy(false);
+        return;
+      }
+      lastError = "The AI returned an empty response.";
+    } catch (err) {
+      lastError = err.message || "Network error.";
+    }
+  }
+
+  setBusy(false);
+  showStatus("AI correction failed: " + lastError, true);
+}
+
+function setBusy(busy) {
+  correctBtn.disabled = busy;
+  correctBtn.textContent = busy ? "Correcting..." : "Correct Text";
+}
 
 // Load a sample into the input box when a sample button is clicked
 document.querySelectorAll(".sample-btn").forEach((btn) => {

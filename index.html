@@ -58,6 +58,36 @@
       </div>
     </section>
 
+    <!-- AI Settings -->
+    <section class="card settings">
+      <label class="label">AI-powered correction (Google Gemini)</label>
+      <div class="mode-row">
+        <label class="mode-option">
+          <input type="radio" name="mode" value="ai" checked />
+          <span>Smart AI correction (rewrites into proper English)</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="basic" />
+          <span>Basic offline correction (simple fixes only)</span>
+        </label>
+      </div>
+
+      <label for="apiKey" class="label" style="margin-top:14px;">Your Gemini API key</label>
+      <div class="key-row">
+        <input
+          type="password"
+          id="apiKey"
+          class="input"
+          placeholder="Paste your Gemini API key here" />
+        <button type="button" id="toggleKey" class="btn btn-ghost">Show</button>
+      </div>
+      <p class="hint">
+        🔒 Your key is saved <strong>only in this browser</strong> — it is never uploaded or shared.
+        Get a free key at
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a>.
+      </p>
+    </section>
+
     <!-- Settings -->
     <section class="card settings">
       <label for="rajEmail" class="label">Mr. Raj's email address</label>
