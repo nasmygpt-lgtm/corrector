@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Correction Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>✍️ English Correction Tool</h1>
+    <p class="subtitle">Paste your text, fix the grammar and formatting, then send it to Mr. Raj.</p>
+  </header>
+
+  <main class="container">
+    <!-- Step 1: Input -->
+    <section class="card">
+      <label for="inputText" class="label">1. Paste your text here</label>
+      <textarea
+        id="inputText"
+        class="textbox"
+        placeholder="Type or paste the text you want to correct..."
+        rows="8"></textarea>
+
+      <div class="button-row">
+        <button id="correctBtn" class="btn btn-primary">Correct Text</button>
+        <button id="clearBtn" class="btn btn-ghost">Clear</button>
+      </div>
+    </section>
+
+    <!-- Sample examples -->
+    <section class="card samples">
+      <label class="label">Sample examples (click to load)</label>
+      <div class="sample-buttons">
+        <button type="button" class="sample-btn"
+          data-text="we request to give Reservation email access, to the concerned staff member, for day-to-day smooth operation.">
+          Reservation email access request
+        </button>
+      </div>
+      <p class="hint">Click a sample to load it into the text box above, then press "Correct Text".</p>
+    </section>
+
+    <!-- Step 2: Output -->
+    <section class="card">
+      <label for="outputText" class="label">2. Corrected text</label>
+      <textarea
+        id="outputText"
+        class="textbox output"
+        placeholder="Your corrected text will appear here..."
+        rows="8"
+        readonly></textarea>
+
+      <ul id="changesList" class="changes-list"></ul>
+
+      <div class="button-row">
+        <button id="copyBtn" class="btn btn-secondary">Copy Corrected Text</button>
+        <button id="emailBtn" class="btn btn-primary">Send to Mr. Raj</button>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="card settings">
+      <label for="rajEmail" class="label">Mr. Raj's email address</label>
+      <input
+        type="email"
+        id="rajEmail"
+        class="input"
+        placeholder="raj@example.com"
+        value="raj@example.com" />
+      <p class="hint">The "Send to Mr. Raj" button opens your email app with the corrected text ready to send.</p>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+  </main>
+
+  <footer class="footer">
+    <p>A simple tool for day-to-day English correction.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
